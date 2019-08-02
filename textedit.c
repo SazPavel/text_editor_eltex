@@ -41,14 +41,14 @@ void clear_in()
 
 int main()
 {
-    WINDOW *wnd;
-    WINDOW *command_wnd;
-    WINDOW *working_wnd;
+    WINDOW *wnd = NULL;
+    WINDOW *command_wnd = NULL;
+    WINDOW *working_wnd = NULL;
     int rows = 0, cols = 0, fd = 0, cycle = 1, i = 0, j = 0,
         write_size = 0, read_size = 0, x = 1, y = 1, num_buf = 0, 
         input_buf = 0, num_buf_tmp = 0;
     char buf[SIZE] = {0};
-    char *work_buf = malloc(SIZE_BUF * sizeof(char));
+    char *work_buf = calloc(SIZE_BUF, sizeof(char));
     
     initscr();
     signal(SIGWINCH, sig_winch);
@@ -63,14 +63,13 @@ int main()
     move(rows - 2, 2);
     printw("F1 - OPEN, F2 - SAVE, F3 - EXIT");
     working_wnd = newwin(rows - 7, cols - 2, 1, 1);
-    wprintw(working_wnd, work_buf);
     wrefresh(wnd);
     wrefresh(command_wnd);
     wrefresh(working_wnd);
     refresh();
     keypad(stdscr, TRUE);
-    keypad(wnd, TRUE);
-    keypad(working_wnd, TRUE);
+   // keypad(wnd, TRUE);
+    //keypad(working_wnd, TRUE);
     noecho();
     
     while(cycle)
@@ -269,20 +268,26 @@ int main()
         }
 #if DEBUG
         move(rows - 2, cols - 14);
-        printw(" %d %d %d %d %c", num_buf, read_size, i, j, work_buf[num_buf]);
+        printw(" %d %d %d %d %c", num_buf, read_size, i, j, "%s", work_buf[num_buf]);
 #endif
 
         move(x, y);
-        mvwprintw(working_wnd, 0, 0, work_buf);
+        mvwprintw(working_wnd, 0, 0, "%s", work_buf);
         wrefresh(working_wnd);
         refresh();
     }
     
     if(fd != 0)
         close(fd);
-    delwin(wnd);
-    delwin(command_wnd);
-    delwin(working_wnd);
+    free(work_buf);
+    if(command_wnd != NULL)
+        delwin(command_wnd);
+    if(working_wnd != NULL)
+        delwin(working_wnd);   
+    if(wnd != NULL) 
+        delwin(wnd);
+
     endwin();
+    
     return 0;
 }
